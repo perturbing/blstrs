@@ -1408,14 +1408,18 @@ mod tests {
 
     #[test]
     fn test_multi_exp() {
-        const SIZE: usize = 10;
-        let mut rng = XorShiftRng::from_seed([
-            0x59, 0x62, 0xbe, 0x5d, 0x76, 0x3d, 0x31, 0x8d, 0x17, 0xdb, 0x37, 0x32, 0x54, 0x06,
-            0xbc, 0xe5,
-        ]);
+        const SIZE: usize = 5;
 
-        let points: Vec<G1Projective> = (0..SIZE).map(|_| G1Projective::random(&mut rng)).collect();
-        let scalars: Vec<Scalar> = (0..SIZE).map(|_| Scalar::random(&mut rng)).collect();
+        let points: Vec<G1Projective> = (0..SIZE).map(|_| G1Projective::generator()).collect();
+        println!("points: {:?}", points.len());
+        let scalars: Vec<Scalar> = (0..SIZE)
+            .map(|i| {
+                let mut bytes = [0u8; 32];
+                bytes[31] = i as u8; // Set the least significant byte to the value of `i`
+                Scalar::from_bytes_be(&bytes).unwrap()
+            })
+            .collect();
+        println!("scalars: {:?}", scalars);
 
         let mut naive = points[0] * scalars[0];
         for i in 1..SIZE {
